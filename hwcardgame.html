@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body{
+      background-color: #fffefa;
+    }
+    .card {
+      width: 100px;
+      height: 180px;
+      /* 設定子元素在 3D 空間內 */
+      transform-style: preserve-3d;
+      position: relative;
+      /* 整張卡片的旋轉 */
+      transform: rotateY(180deg);
+      /* 0.5 秒翻轉動畫 */
+      transition: transform 0.5s;
+      float: left;
+      margin: 10px;
+    }
+
+    .front {
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: absolute;
+    }
+
+    .back {
+      width: 100%;
+      height: 100%;
+      background-image: url(jokecards/背景.jpg);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      position: absolute;
+      /* 把背面的 div 轉到 front 後面貼齊 */
+      transform: rotateY(180deg);
+      backface-visibility: hidden;
+    }
+
+    #game {
+      width: 960px;
+      margin: auto;
+    }
+
+    .open {
+      transform: rotateY(0deg);
+    }
+
+    #texts {
+      position: absolute;
+      font-size: larger;
+      font-weight: bolder;
+     
+    }
+    #btn-restart{
+      background-image: url(jokecards/reset0.png);
+      width: 100px;
+      height: 80px;
+      background-repeat: no-repeat;
+      border-radius: 50%;;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="texts">
+    <p>分數:<span id="text-score">10</span></p>
+    <p>翻開次數:<span id="text-count">0</span></p>
+    <P><input type="button" id="btn-restart" ></P>
+  </div>
+  <div id="game">
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+  <script>
+
+
+    // $(function () {
+    function aaa() {
+
+
+
+      let score = 10;
+      let count = 0;
+
+      // 產生 16 張卡片
+      for (let i = 0; i < 16; i++) {
+        $("#game").append(`<div class="card">
+          <div class="front"></div>
+          <div class="back"></div>
+        </div>`)
+      }
+
+      // 指定數字
+      for (let i = 0; i < $(".card").length / 2; i++) {
+        let num = i % ($(".card").length / 2) + 1;
+        $(".card").eq(i).find(".front").css("background-image", `url(jokecards/${num}A.jpg)`)
+        $(".card").eq(i).addClass(`card${num}`);
+
+        $(".card").eq(i + ($(".card").length / 2)).find(".front").css("background-image", `url(jokecards/${num}B.jpg)`);
+        $(".card").eq(i + ($(".card").length / 2)).addClass(`card${num}`);
+
+        // $(".card").eq(i).attr("data-card", num);
+      }
+
+      // 換 10 次牌
+      for (let i = 0; i < 16; i++) {
+        // 隨機抽一張牌，移動到隨機一張牌後面
+        let target = Math.floor(Math.random() * $(".card").length);
+        let dist = Math.floor(Math.random() * $(".card").length);
+        $(".card").eq(target).insertAfter($(".card").eq(dist));
+      }
+
+      // function aaa() {
+      $(".card").on('click', function () {
+
+        // 如果已翻開的牌數量小於 2，且這張還沒翻開
+        if ($(".open").length < 2 && !$(this).hasClass("open")) {
+          $(this).addClass("open");
+
+        }
+
+        // 翻開兩張牌了
+        if ($(".open").length == 2) {
+          count++;
+          $("#text-count").text(count);
+          // 過一秒鐘後翻回來
+          setTimeout(() => {
+            $(".open").removeClass("open")
+          }, 1500);
+
+          // 如果兩張一樣
+          if ($(".open").eq(0).attr("class") == $(".open").eq(1).attr("class")) {
+            $(".open").fadeTo(1500, 0).addClass("ok")
+            score++;
+            $("#text-score").text(score);
+          } else {
+            score--;
+            $("#text-score").text(score);
+          }
+
+          // 如果都配對完
+          if ($(".ok").length == $(".card").length) {
+            // 等待 1 秒淡出後再跳訊息
+            setTimeout(() => {
+              Swal.fire({
+                icon: 'success',
+                title: '恭喜',
+                text: '恭喜過關'
+              })
+            }, 2000);
+          }
+
+          if(0>score){
+      
+          setTimeout(() => {
+              Swal.fire({
+                icon: 'error',
+                title: '哈哈',
+                text: '再來一次'
+              })
+            }, 500);
+            $("#game").html("");
+          }
+        }
+      })
+      // })
+    }
+    aaa();
+    $("#btn-restart").click(function () {
+
+      score = 10;
+      $("#text-score").text(score);
+      count = 0;
+      $("#text-count").text(count);
+
+      $("#game").html("");
+
+      aaa();
+
+    })
+    
+
+  </script>
+</body>
+
+</html>
